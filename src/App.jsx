@@ -1,16 +1,57 @@
 /*
 TODO:
-  - Setup state management using useState
-  - Setup event binding for button elements
-  - Update view state based on calculation results
-  - Figure out how to dynamically populate success/fail alert
-  - Possibly create seperate file for building of output cards sections and import it
+  - Fix failing "Additional money" test
+  - Fix failing "Individual change" test
+  - Update page styling
 
 */
 import "./App.css";
+import { useState, useEffect } from "react";
+import DenominationCard from "./DenominationCard";
+import CalculateDenominations from "./CalculateDenominations";
 
 function App() {
-  // Add your code here
+  const [amountDue, setAmountDue] = useState("");
+  const [amountReceived, setAmountReceived] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [denominations, setDenominations] = useState([
+    { label: "Twenties", amount: 0 },
+    { label: "Tens", amount: 0 },
+    { label: "Fives", amount: 0 },
+    { label: "Ones", amount: 0 },
+    { label: "Quarters", amount: 0 },
+    { label: "Dimes", amount: 0 },
+    { label: "Nickels", amount: 0 },
+    { label: "Pennies", amount: 0 },
+  ]);
+
+  const handleCalculate = () => {
+    const due = Number(amountDue);
+    const received = Number(amountReceived);
+
+    if (isNaN(due) || isNaN(received)) {
+      setAlertMessage("Please enter valid numbers for both fields.");
+      setIsError(true);
+      return;
+    }
+
+    if (received < due) {
+      setAlertMessage("ERROR: Amount received is less than amount due.");
+      setIsError(true);
+      return;
+    }
+
+    const totalChange = received - due;
+    setAlertMessage(`The total change due is $${totalChange.toFixed(2)}`);
+    setIsError(false);
+
+    const breakdown = CalculateDenominations(totalChange);
+    setDenominations(breakdown);
+
+    setAmountDue("");
+    setAmountReceived("");
+  };
 
   return (
     <div className="container m-4">
@@ -29,6 +70,8 @@ function App() {
                 data-testid="amountDue"
                 type="number"
                 placeholder="Enter Amount Due"
+                value={amountDue}
+                onChange={(e) => setAmountDue(Number(e.target.value))}
               />
               <label htmlFor="amountReceived">How much was received?</label>
               <input
@@ -37,12 +80,15 @@ function App() {
                 data-testid="amountReceived"
                 type="number"
                 placeholder="Enter Amount Received"
+                value={amountReceived}
+                onChange={(e) => setAmountReceived(Number(e.target.value))}
               />
             </div>
             <div className="card-footer text-center">
               <button
                 className="calculate bg-primary text-light form-control"
                 data-testid="calculate"
+                onClick={handleCalculate}
               >
                 Calculate
               </button>
@@ -52,94 +98,25 @@ function App() {
         <div className="col-md-8">
           <div className="card bg-light text-dark shadow rounded">
             <div className="card-body">
-              <div
-                id="output"
-                className="card-title alert alert-success text-center"
-                role="alert"
-              >
-                <h3>Success/Fail text displayed here</h3>
-              </div>
-              <div className="row">
-                <div className="col-md-3">
-                  <div className="card bg-light text-dark shadow rounded">
-                    <div className="card-body">
-                      <h4 className="card-title text-center">Twenties</h4>
-                      <p className="card-text text-center">
-                        Amount of twenties to be displayed here
-                      </p>
-                    </div>
-                  </div>
+              {alertMessage && (
+                <div
+                  id="output"
+                  className={`alert text-center ${
+                    isError ? "alert-danger" : "alert-success"
+                  }`}
+                  role="alert"
+                >
+                  <h3>{alertMessage}</h3>
                 </div>
-                <div className="col-md-3">
-                  <div className="card bg-light text-dark shadow rounded">
-                    <div className="card-body">
-                      <h4 className="card-title text-center">Tens</h4>
-                      <p className="card-text text-center">
-                        Amount of tens to be displayed here
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="card bg-light text-dark shadow rounded">
-                    <div className="card-body">
-                      <h4 className="card-title text-center">Fives</h4>
-                      <p className="card-text text-center">
-                        Amount of fives to be displayed here
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="card bg-light text-dark shadow rounded">
-                    <div className="card-body">
-                      <h4 className="card-title text-center">Ones</h4>
-                      <p className="card-text text-center">
-                        Amount of ones to be displayed here
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="card bg-light text-dark shadow rounded">
-                    <div className="card-body">
-                      <h4 className="card-title text-center">Quarters</h4>
-                      <p className="card-text text-center">
-                        Amount of quarters to be displayed here
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="card bg-light text-dark shadow rounded">
-                    <div className="card-body">
-                      <h4 className="card-title text-center">Dimes</h4>
-                      <p className="card-text text-center">
-                        Amount of dimes to be displayed here
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="card bg-light text-dark shadow rounded">
-                    <div className="card-body">
-                      <h4 className="card-title text-center">Nickels</h4>
-                      <p className="card-text text-center">
-                        Amount of nickels to be displayed here
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="card bg-light text-dark shadow rounded">
-                    <div className="card-body">
-                      <h4 className="card-title text-center">Pennies</h4>
-                      <p className="card-text text-center">
-                        Amount of pennies to be displayed here
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              )}
+              <div className="row g-3">
+                {denominations.map((denom, index) => (
+                  <DenominationCard
+                    key={index}
+                    label={denom.label}
+                    amount={denom.amount}
+                  />
+                ))}
               </div>
             </div>
           </div>
